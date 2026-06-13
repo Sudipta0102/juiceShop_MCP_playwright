@@ -1,0 +1,30 @@
+# Playwright Test Execution Outputs
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Node/TypeScript Dependencies
+node_modules/
+/core
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# VS Code Specific Settings and Caches
+.vscode/
+*.code-workspace
+.history/
+
+# Windows OS System Files
+# Thumbs.db
+# Thumbs.db:encryptable
+# ehthumbs.db
+# ehthumbs_vista.db
+# [Dd]esktop.ini
+# $RECYCLE.BIN/
+
+# Environment Variables & Local Secrets
+.env
+.env.local
+.env.*.local

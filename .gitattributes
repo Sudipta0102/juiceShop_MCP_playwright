@@ -1,0 +1,11 @@
+# Handle line endings automatically for windows/linux compatibility
+* text=auto
+
+# Explicitly declare text files you want normalized to LF on commit
+*.json text
+*.ts text
+*.js text
+*.md text
+
+# Ensure shell scripts always use LF (Windows CRLF breaks bash scripts)
+*.sh text eol=lf
