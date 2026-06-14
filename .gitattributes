@@ -6,6 +6,7 @@
 *.ts text
 *.js text
 *.md text
+*.yml text
 
 # Ensure shell scripts always use LF (Windows CRLF breaks bash scripts)
 *.sh text eol=lf
