@@ -35,3 +35,6 @@ docs/
 
 # SQLite database snapshots copied from Juice Shop container
 container-data/
+
+notes.txt
+test-db.ts
