@@ -12,7 +12,9 @@ yarn-debug.log*
 yarn-error.log*
 
 # VS Code Specific Settings and Caches
-.vscode/
+#.vscode/
+.vscode/* 
+!.vscode/mcp.json
 *.code-workspace
 .history/
 
