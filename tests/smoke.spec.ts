@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('homepage loads', async ({ page }) => {
+test('homepage loads', { tag: ['@smoke', '@ui'] }, async ({ page }) => {
   await page.goto('/');
 
   await expect(page).toHaveTitle(/OWASP Juice Shop/i);
