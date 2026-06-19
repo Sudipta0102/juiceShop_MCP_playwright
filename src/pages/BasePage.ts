@@ -71,10 +71,11 @@ export abstract class BasePage {
    * Protected: called internally by public login/register methods.
    */
   protected async submit(): Promise<void> {
-    const btn = this.submitButton.first();
-    await btn.click();
-    // Wait for submission to process
-    await this.page.waitForTimeout(1000);
+    // const btn = this.submitButton.first();
+    // await btn.click();
+    // // Wait for submission to process
+    // await this.page.waitForTimeout(1000);
+    await this.submitButton.click();
   }
 
   /**

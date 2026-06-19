@@ -1,7 +1,8 @@
 import fs from 'fs';
 import { execSync } from 'child_process';
+import path from 'path';
 
-const SNAPSHOT_DIR = './container-data';
+//const SNAPSHOT_DIR = './container-data';
 const CONTAINER_NAME = 'juiceshop';
 const CONTAINER_DB_PATH = '/juice-shop/data';
 /**
@@ -41,40 +42,45 @@ const CONTAINER_DB_PATH = '/juice-shop/data';
  * - existing snapshot cannot be removed
  * - copy operation failed
  */
-export function refreshDB(): void{
+export function refreshDB(snapshotDir: string): void {
 
-    console.log('Removing Existing snapshot');
+  console.log(
+    `Removing existing snapshot: ${snapshotDir}`
+  );
 
-    // it's equivalent to 'rm -rf ./container-data' 
-    if(fs.existsSync(SNAPSHOT_DIR)){
-        fs.rmSync(SNAPSHOT_DIR, {
-            recursive: true,
-            force: true,
-        });
+  if (fs.existsSync(snapshotDir)) {
+    fs.rmSync(snapshotDir, {
+      recursive: true,
+      force: true,
+    });
+  }
+
+  // ensure the parent directories exist
+  fs.mkdirSync(path.dirname(snapshotDir), { recursive: true });
+
+  console.log(
+    `Copying latest database into: ${snapshotDir}`
+  );
+
+  execSync(
+    `docker cp ${CONTAINER_NAME}:${CONTAINER_DB_PATH} ${snapshotDir}`,
+    {
+      stdio: 'inherit',
     }
+  );
 
-    console.log('Copying latest database from container...');
-
-    // - docker cp juiceshop:/juice-shop/data ./container-data
-    // - The { stdio: 'inherit' } option tells Node.js to share 
-    // your main terminal screen directly with the Docker command.
-    execSync(
-        `docker cp ${CONTAINER_NAME}:${CONTAINER_DB_PATH} ${SNAPSHOT_DIR}`,
-        {
-            stdio: 'inherit'
-        }
-    );
-
-    console.log('Database snatshot refreshed successfully.');    
+  console.log(
+    'Database snapshot refreshed successfully.'
+  );
 }
 
-// allow this to run independently as a script
-if(require.main===module){
-    try{
-        refreshDB();
-    }catch(error){
-        console.error('Failed to refresh database snapshot');
-        console.error(error);
-        process.exit(1);
-    }
-}
+//allow this to run independently as a script
+// if(require.main===module){
+//     try{
+//         refreshDB();
+//     }catch(error){
+//         console.error('Failed to refresh database snapshot');
+//         console.error(error);
+//         process.exit(1);
+//     }
+// }

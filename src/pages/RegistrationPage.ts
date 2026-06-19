@@ -1,5 +1,6 @@
 import { Page, Locator } from '@playwright/test';
 import BasePage from './BasePage';
+import { expect } from '@playwright/test';
 
 /**
  * RegistrationPage - Page Object for user registration
@@ -36,53 +37,51 @@ export class RegistrationPage extends BasePage {
   readonly confirmPasswordInput: Locator;
   readonly securityQuestionSelect: Locator;
   readonly answerInput: Locator;
+  //readonly securityQuestionTrigger: Locator;
+  readonly securityContainer: Locator;
+  readonly firstOptionByIndex: Locator;
 
   constructor(page: Page) {
     super(page);
 
-    // Component scoping: Juice Shop registration is rendered inside an app-register wrapper,
-    // not a native <form> element. Use the page component root for stable scoping.
     this.form = page.locator('app-register');
 
-    // Email input: use the accessible label or known control id
-    this.emailInput = this.form
-      .locator('input[aria-label="Email address field"]')
-      .or(this.form.locator('#emailControl'))
-      .or(this.form.locator('input[placeholder*="Email"]'));
+    this.emailInput = this.form.locator('#emailControl');
 
-    // Password input: use the known accessible label or id
     this.passwordInput = this.form
       .locator('input[aria-label="Field for the password"]')
       .or(this.form.locator('#passwordControl'))
-      .or(this.form.locator('input[type="password"]'))
       .first();
 
-    // Confirm password input: use the known accessible label or id
     this.confirmPasswordInput = this.form
       .locator('input[aria-label="Field to confirm the password"]')
-      .or(this.form.locator('#repeatPasswordControl'))
-      .or(this.form.locator('input[type="password"]'))
-      .nth(1);
+      .or(this.form.locator('#repeatPasswordControl'));
 
-    // Security question select: accessible role or component fallback
-    this.securityQuestionSelect = this.form
-      .getByRole('combobox', {
-        name: /Selection list for the security question/i,
-      })
-      .or(this.form.locator('mat-select')
-      .or(this.page.getByPlaceholder('securityQuestion')));
+    this.securityContainer = this.form.locator('.security-container');  
+    
+    // this.securityQuestionSelect = this.form.getByRole('combobox', {
+    //   name: /Selection list for the security question/i,
+    // });
+    this.securityQuestionSelect = this.securityContainer.locator('mat-label:has-text("Security Question")');
 
-    // Security answer input: use accessible label, id, or placeholder
-    this.answerInput = this.form
-      .locator('input[aria-label="Field for the answer to your security question"]')
-      .or(this.form.locator('#securityAnswerControl'))
-      .or(this.form.locator('input[placeholder="Answer to your security question"]'));
 
-    // Submit button: registration-specific label + fallback selector
-    this.submitButton = this.form
-      .getByRole('button', { name: /^(?:Register|Sign up|Sign Up)$/i })
-      .or(this.form.locator('button:has-text("Register")'))
-      .or(this.form.locator('button[type="submit"]'));
+    //this.securityQuestionTrigger = this.form.locator('.mat-mdc-select-trigger');
+    this.firstOptionByIndex = this.securityContainer.getByRole('option').first();
+
+    this.answerInput = this.securityContainer.locator('#securityAnswerControl');
+    // this.answerInput = this.form
+    //   .locator('#securityAnswerControl')
+    //   .or(
+    //     this.form.locator(
+    //       'input[placeholder="Answer to your security question"]'
+    //     )
+    //   );
+
+    // this.submitButton = this.form.getByRole('button', {
+    //   name: /^(?:Register|Sign up|Sign Up)$/i,
+    // });
+    this.submitButton = this.form.getByRole('button', {name: /registration/i,})
+      .or(this.form.getByRole('button', {name: /register/i,}));
   }
 
   /**
@@ -95,103 +94,128 @@ export class RegistrationPage extends BasePage {
   /**
    * Fill the confirm password field.
    */
-  protected async fillConfirmPassword(password: string): Promise<void> {
+  protected async fillConfirmPassword(
+    password: string
+  ): Promise<void> {
     await this.confirmPasswordInput.fill(password);
   }
 
   /**
-   * Select the security question from the registration dropdown.
+   * Select a security question.
    */
-  async selectSecurityQuestion(question: string): Promise<void> {
-    await this.securityQuestionSelect.waitFor({ state: 'visible', timeout: 10000 });
-    await this.securityQuestionSelect.focus();
-    await this.page.keyboard.press('Enter');
-    await this.page.waitForSelector('mat-option, [role="option"]', { timeout: 5000 });
+  async selectSecurityQuestion(): Promise<void> {
 
-    const option = this.page.getByRole('option', { name: question });
-    if ((await option.count()) > 0) {
-      await option.click();
-      return;
-    }
+    await this.securityQuestionSelect.click();
 
-    await this.page.locator('mat-option', { hasText: question }).first().click();
+    await this.firstOptionByIndex.click();
+
   }
+
 
   /**
    * Fill the answer to the security question.
    */
-  async fillSecurityAnswer(answer: string): Promise<void> {
+  async fillSecurityAnswer(
+    answer: string
+  ): Promise<void> {
     await this.answerInput.fill(answer);
   }
 
   /**
-   * Perform a registration by filling all required fields and submitting.
+   * Complete the registration form.
    */
   async register(
     email: string,
     password: string,
     confirmPassword: string,
-    securityQuestion: string,
     securityAnswer: string
   ): Promise<void> {
+
     await this.fillEmail(email);
     await this.fillPassword(password);
     await this.fillConfirmPassword(confirmPassword);
-    await this.selectSecurityQuestion(securityQuestion);
-    await this.fillSecurityAnswer(securityAnswer);
-    await this.submit();
+
+    await this.selectSecurityQuestion();
+
+    await this.fillSecurityAnswer(
+      securityAnswer
+    );
+
+    //await this.submit();
+    await Promise.all([
+     this.page.waitForURL(/#\/login/),
+     this.submit(),
+    ]);
   }
 
   /**
-   * Get any registration error message displayed on the page.
+   * Get any registration error shown on the page.
    */
   async getRegistrationError(): Promise<string | null> {
     return await this.getErrorMessage();
   }
 
   /**
-   * Whether the registration button is currently enabled.
+   * Whether the register button is enabled.
    */
   async isRegisterButtonEnabled(): Promise<boolean> {
     return await this.submitButton.isEnabled();
   }
 
   /**
-   * Wait for the registration button to become enabled.
+   * Wait for the register button to become enabled.
    */
   async waitForRegisterButtonEnabled(): Promise<void> {
-    await this.submitButton.waitFor({ state: 'visible', timeout: 10000 });
+    await this.submitButton.waitFor({
+      state: 'visible',
+      timeout: 10000,
+    });
 
     const deadline = Date.now() + 10000;
+
     while (Date.now() < deadline) {
       if (await this.submitButton.isEnabled()) {
         return;
       }
+
       await this.page.waitForTimeout(100);
     }
 
-    throw new Error('Register button did not become enabled within timeout');
+    throw new Error(
+      'Register button did not become enabled within timeout'
+    );
   }
 
   /**
-   * Perform registration and wait for the login route to appear.
+   * Register and wait for navigation to login.
    */
   async registerAndWaitForLogin(
     email: string,
     password: string,
     confirmPassword: string,
-    securityQuestion: string,
     securityAnswer: string
   ): Promise<void> {
-    await this.register(email, password, confirmPassword, securityQuestion, securityAnswer);
+
+    await this.register(
+      email,
+      password,
+      confirmPassword,
+      securityAnswer
+    );
+
     await this.waitForRegistrationSuccess();
   }
 
   /**
-   * Wait for registration success by checking navigation to the login route.
+   * Wait until the login page is displayed.
    */
   async waitForRegistrationSuccess(): Promise<void> {
-    await this.page.waitForURL(/#\/login/, { timeout: 10000 });
+    await this.page.waitForURL(
+      /#\/login/,
+      {
+        timeout: 10000,
+      }
+    );
   }
 }
 

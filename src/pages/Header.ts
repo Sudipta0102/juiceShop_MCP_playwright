@@ -26,6 +26,8 @@ export class Header {
   readonly cartButton: Locator;
   readonly cookieDismissButton: Locator;
   readonly welcomeBannerDismissButton: Locator;
+  readonly welcomeDialog: Locator;
+  readonly cookieDialog: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -40,17 +42,11 @@ export class Header {
       .locator('button[aria-label="Show the shopping cart"]')
       .or(page.locator('button:has-text("Your Basket")'));
 
-    // Cookie consent: aria-label or button text "Me want it!"
-    this.cookieDismissButton = page
-      .locator('button[aria-label="dismiss cookie message"]')
-      .or(page.locator('button.cc-dismiss, button:has-text("Me want it!")'));
+    this.welcomeDialog = page.locator('mat-dialog-container');
+    this.welcomeBannerDismissButton = this.welcomeDialog.getByRole('button', { name: 'Close Welcome Banner' });
 
-    // Welcome banner: explicit aria-label
-    // this.welcomeBannerDismissButton = page.locator(
-    //   'button[aria-label="Close Welcome Banner"]'
-    // );
-    this.welcomeBannerDismissButton = page.getByRole
-    ('button', { name: 'Close Welcome Banner'});
+    this.cookieDialog = page.locator('[role="dialog"][aria-label="cookieconsent"]');
+    this.cookieDismissButton = this.cookieDialog.getByRole('button', { name: 'dismiss cookie message' });
   }
 
   /**
@@ -58,13 +54,13 @@ export class Header {
    * BRITTLE: depends on banner presence; may not exist on some page loads.
    */
   async dismissCookieConsent(): Promise<void> {
-    try {
-      if (await this.cookieDismissButton.isVisible({ timeout: 1000 })) {
+    // try {
+    //   if (await this.cookieDismissButton.isVisible({ timeout: 1000 })) {
         await this.cookieDismissButton.click();
-      }
-    } catch (e) {
-      // Banner may not be present; silently continue
-    }
+    //   }
+    // } catch (e) {
+    //   // Banner may not be present; silently continue
+    // }
   }
 
   /**
@@ -72,13 +68,13 @@ export class Header {
    * BRITTLE: depends on banner presence; may not exist on some page loads.
    */
   async dismissWelcomeBanner(): Promise<void> {
-    try {
-      if (await this.welcomeBannerDismissButton.isVisible({ timeout: 1000 })) {
+    // try {
+    //   if (await this.welcomeBannerDismissButton.isVisible({ timeout: 1000 })) {
         await this.welcomeBannerDismissButton.click();
-      }
-    } catch (e) {
-      // Banner may not be present; silently continue
-    }
+   //   }
+    // } catch (e) {
+    //   // Banner may not be present; silently continue
+    // }
   }
 
   /**
