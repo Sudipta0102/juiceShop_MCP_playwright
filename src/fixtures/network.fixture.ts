@@ -1,8 +1,10 @@
 import { test as base } from '@playwright/test';
 import { CustomApiClient } from "@util/CustomApiClient";
+import { NetworkInterceptor } from '@util/NetworkInterceptor';
 
 export type NetworkFixtures = {
-    apiclient: CustomApiClient
+    apiclient: CustomApiClient,
+    networkMock: NetworkInterceptor
 
 }
 
@@ -14,7 +16,7 @@ export const networkTest = base.extend<NetworkFixtures>({
         const client = new CustomApiClient(request, page);
 
         await use(client);
-    }
+    },
 
     // future modification as soon as i write api login util
     //  apiClient: async ({ request, apiAuthenticatedPage }, use)=>{
@@ -27,5 +29,10 @@ export const networkTest = base.extend<NetworkFixtures>({
 
     // },
 
+    networkMock: async({ page }, use) =>{
 
+        const mock = new NetworkInterceptor(page);
+
+        await use(mock);
+    }
 });
