@@ -5,7 +5,7 @@ type DatabaseFixture = {
     dbClient: DatabaseClient;
 }
 
-const test = base.extend<DatabaseFixture>({
+export const test = base.extend<DatabaseFixture>({
 
     dbClient: async ({}, use, testInfo)=>{
 
