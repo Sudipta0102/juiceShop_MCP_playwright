@@ -1,13 +1,14 @@
-import { test, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
+import { test } from '../../src/fixtures/database.fixture';
 import { RegistrationPage } from '@pages/RegistrationPage';
 import {  Header } from '@pages/Header';
-import { DatabaseManager } from '@util/databaseManager';
+//import { DatabaseManager } from '@util/databaseManager';
 import { getUserByEmail } from '../../src/repositories/userRepository';
 import { randomUUID } from 'crypto';
 
 test('happy-path registration completes, navigates to login and Users table is updated in the database', 
   { tag: ['@auth', '@db'] }, 
-  async ({ page }) => {
+  async ({ page, dbClient }) => {
 
   const workerIdx = test.info().workerIndex;  
   const userData = {
@@ -16,14 +17,17 @@ test('happy-path registration completes, navigates to login and Users table is u
     //securityQuestion : 'Your eldest siblings middle name?',
     securityAnswer : 'Blue'
   }  
+  // BEFORE REGISTRATION
+  const beforeSnapshot = dbClient.createSnapshot();
 
-  let db = DatabaseManager.getFreshDatabase(workerIdx);
-  try { 
-    const existingUser = getUserByEmail( db, userData.email ); 
-    expect(existingUser).toBeUndefined(); 
-  } finally 
-  { 
-    db.close(); 
+  try{
+    const existingUser = beforeSnapshot.execute( 
+      db => getUserByEmail(db , userData.email)
+    );
+    
+    expect(existingUser).toBeUndefined();
+  }finally{
+    beforeSnapshot.close();
   }
 
   await page.goto("/");
@@ -52,13 +56,20 @@ test('happy-path registration completes, navigates to login and Users table is u
 
   await expect(page).toHaveURL(/#\/login/);
 
-  db = DatabaseManager.getFreshDatabase(workerIdx);
-  try { 
-    const registeredUser = getUserByEmail( db, userData.email ); 
-    expect(registeredUser).toBeDefined(); 
-    expect( registeredUser?.email ).toBe(userData.email); 
-  } finally { 
-    db.close(); 
+ 
+  // AFTER REGISTRATION
+  const afterSnapshot = dbClient.createSnapshot();
+
+  try{
+    const registeredUser = afterSnapshot.execute(
+      db => getUserByEmail(db, userData.email)
+    );
+
+    expect(registeredUser).toBeDefined();
+
+    expect(registeredUser?.email).toBe(userData.email);
+  }finally{
+    afterSnapshot.close();
   }
-    
+
 });

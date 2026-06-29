@@ -7,12 +7,14 @@ type DatabaseFixture = {
 
 export const test = base.extend<DatabaseFixture>({
 
-    dbClient: async ({}, use, testInfo)=>{
+    dbClient: [
+     async ({}, use, testInfo)=>{
 
         const databaseClient = new DatabaseClient(testInfo.workerIndex);
 
         await use(databaseClient);
 
-    }
-
+     },
+     {scope: 'worker'}
+    ]
 });

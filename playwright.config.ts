@@ -32,12 +32,19 @@ export default defineConfig({
    globalTeardown: './infra/setup/global.teardown.ts',
   /* This function will stop the container after after every test */ 
 
+  timeout: 60000,
+
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
     baseURL: 'http://localhost:8888',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+
+    launchOptions:{
+      headless: true,
+      //slowMo: 1000
+    }
   },
 
   /* Configure projects for major browsers */
