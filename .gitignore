@@ -32,8 +32,9 @@ yarn-error.log*
 .env.*.local
 
 # Keep my README local and private
-README.md
-docs/*
+# README.md
+docs/mcp*
+docs/Page*
 !docs/prompts/
 !docs/prompts/**
 
@@ -41,4 +42,4 @@ docs/*
 container-data/
 
 notes.txt
-test-db.ts
+#test-db.ts
