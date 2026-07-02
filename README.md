@@ -13,11 +13,12 @@ The project demonstrates how to build a scalable automation framework by combini
 * Composable Playwright Fixtures
 * API + UI Hybrid Testing
 * Network Interception Utilities
-* SQLite Database Validation
+* SQLite Database Per Worker Validation
 * Docker Managed Test Environment
 * Automatic Application Setup & Teardown
 * HTML Reporting
 * Cross Browser Execution
+  
 
 ---
 
